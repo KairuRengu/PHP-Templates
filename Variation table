@@ -1,0 +1,342 @@
+<?php
+/**
+
+Template for displaying variations in table format. One add to cart button per table row
+
+*/ 
+global  $wp_taxonomies, $post, $product;
+?>
+
+<div style="clear:both"></div>
+
+<?php if ( '' != $ignitewoo_variations_list->settings['table_title'] ) { ?>
+
+	<h2><?php echo $ignitewoo_variations_list->settings['table_title']  ?></h2>
+
+<?php } ?>
+
+
+<table class="varations-list-table table table-striped table-hover table-bordered ">
+
+	<thead>
+	
+		<tr>
+			<th><?php _e( 'Details', 'ignitewoo_variations' )?></th>
+			<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_data'] ) { ?>
+				<?php $one = 0; ?>
+				<?php foreach ($variations as $variation){ ?>
+					<?php if ($one ==0) {?>
+						<?php foreach( $variation['attributes'] as $name => $value ) { ?>
+								<?php $attribute_name = str_replace('attribute_','',$name); ?>
+								<?php $attribute_name=ucwords(str_replace('-',' ',$attribute_name));?>
+								<th><?php _e( $attribute_name, 'ignitewoo_variations' )?></th>
+								<?php $one = 1 ?>
+						<?php } ?>
+					<?php } ?>
+				<?php } ?>
+
+				
+				
+			<?php } ?>
+			
+			<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_price'] ) { ?>
+			
+				<th class="var-qty"><?php _e( 'Price', 'ignitewoo_variations' )?></th>
+				
+			<?php } ?>
+			
+			<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_add_to_cart'] ) { ?>
+			
+				<th class="var-qty"><?php _e( 'QTY', 'ignitewoo_variations' )?></th>
+				
+			
+			<?php } ?>
+		</tr>
+	
+	</thead>
+	
+	<tbody>
+	
+	<?php foreach ( $variations as $variation ) { ?>
+	
+		<?php
+			$post_id = $variation['variation_id'];
+		?>
+	
+		<tr>
+			<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_data'] ) { ?>
+				
+				
+
+					<?php 
+					if ( 'yes' == $ignitewoo_variations_list->settings['show_thumbnail'] ) { 
+					$attachment_id = get_post_meta( $post_id, '_thumbnail_id', true );
+					
+						if ( $attachment_id ) { 
+							
+							$classes = array( 'zoom' );
+
+							$image_link = wp_get_attachment_url( $attachment_id );
+
+							if ( ! $image_link )
+								continue;
+
+							$image = wp_get_attachment_image( $attachment_id, apply_filters( 'single_product_small_thumbnail_size', 'shop_thumbnail' ) );
+							$image_class = esc_attr( implode( ' ', $classes ) );
+							$image_title = esc_attr( get_the_title( $attachment_id ) );
+
+							echo apply_filters( 'woocommerce_single_product_image_thumbnail_html', sprintf( '<a href="%s" class="%s" title="%s"  rel="prettyPhoto[product-gallery]">%s</a>', $image_link, $image_class, $image_title, $image ), $attachment_id, $post_id, $image_class );
+							
+							?>
+							
+							
+							
+							<?php
+						}
+					}
+					?>
+					
+					<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_sku'] ) { ?>
+						<td><?php  echo $variation['sku']; ?></td>
+						
+					<?php }?>
+
+					<?php 
+				
+					if ( 'yes' == $ignitewoo_variations_list->settings['show_attributes'] )
+					foreach ( $variation['attributes'] as $name => $value ) { ?>
+
+						<?php 
+						
+						$aname = str_replace( 'attribute_', '', $name );
+						
+						if ( taxonomy_exists( $aname ) ) {
+
+							$t_title = $wp_taxonomies[ $aname ]->label;
+							
+							$orderby = $woocommerce->attribute_orderby( $aname );
+
+							switch ( $orderby ) {
+							
+								case 'name' :
+									$args = array( 'orderby' => 'name', 'hide_empty' => false, 'menu_order' => false );
+									break;
+								case 'id' :
+									$args = array( 'orderby' => 'id', 'order' => 'ASC', 'menu_order' => false );
+									break;
+								case 'menu_order' :
+									$args = array( 'menu_order' => 'ASC' );
+									break;
+							}
+
+							$terms = get_terms( $aname, $args );
+							
+							$aname = str_replace( 'pa_', '', $aname );
+							
+							foreach ( $terms as $term ) {
+							
+								if ( $term->slug !== $value )
+									continue;
+								
+								?><strong><?php echo $t_title;?></strong>: <?php echo $term->name; ?>
+
+								<?php
+							}
+							
+						} else {
+
+							?>
+<?php //var_dump( $attribute_strings ) ?>
+							<td><?php echo ( isset( $attribute_strings[  str_replace( '-' , ' ', $name ) ][ $value ] ) ? $attribute_strings[  str_replace( '-' , ' ', $name ) ][ $value ] : '' ); ?></td>
+
+								
+						<?php
+						
+						}
+						
+						?>
+						
+						
+
+					
+					<?php } ?>
+					
+					<?php 
+					if ( 'in_data' == $ignitewoo_variations_list->settings['show_stock'] )
+						echo $variation['availability_html']
+					?>
+			
+					
+				
+				<?php } ?>
+			
+
+			
+			<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_price'] ) { ?>
+			
+				<td>
+					<?php echo $variation['price_html'] ?>
+					
+					<?php 
+					if ( 'below_price' == $ignitewoo_variations_list->settings['show_stock'] )
+						echo $variation['availability_html']
+					?>
+				</td>
+			
+			<?php } ?>
+			
+			<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_add_to_cart'] ) { ?>
+			
+				<?php if ( $variation['is_in_stock'] || $variation['backorders_allowed'] ) { ?>
+				
+					<td>
+					<form action="<?php echo do_shortcode('[add_to_cart_url id="' . $product->id . '"]'); ?>" class="variations_form cart" method="post" enctype="multipart/form-data" data-product_id="<?php echo $product->id; ?>">
+					<input type="hidden" name="add-to-cart" value="<?php echo $product->id ?>">
+					<input type="hidden" name="variations_table" value="true">
+					
+						<?php 
+						$defaults = array(
+							'input_name'  	=> 'quantity',
+							'input_value'  	=> '1',
+							'max_value'  	=> apply_filters( 'woocommerce_quantity_input_max', '', $product ),
+							'min_value'  	=> apply_filters( 'woocommerce_quantity_input_min', '', $product ),
+							'step' 		=> apply_filters( 'woocommerce_quantity_input_step', '1', $product )
+						);
+
+						$args = array(
+							'input_name'  	=> 'variation['. $post_id . '][quantity]',
+							'input_value'  	=> '0',
+							'min_value' 	=> 0,
+							'max_value' 	=> $variation['max_qty'],
+							'step'		=> 1
+						);
+						
+						$args = apply_filters( 'woocommerce_quantity_input_args', wp_parse_args( $args, $defaults ), $product );
+						
+						extract( $args );
+						
+						// Can't use the WC function because of a bug in Chrome when min and max are used in input fields
+						// Chrome doesn't properly allow QTY of zero when submitting the form
+						// So we use a workaround by having JS set the min / max fields if the browser in use 
+						// isn't Chrome.
+						//woocommerce_quantity_input( $args ); 
+						
+						?>
+						<div class="quantity">
+							<input type="number" step="1" <?php if ( is_numeric( $min_value ) ) : ?>data-min="<?php echo esc_attr( $min_value ); ?>"<?php endif; ?> <?php if ( is_numeric( $max_value ) ) : ?>data-max="<?php echo esc_attr( $max_value ); ?>"<?php endif; ?> name="<?php echo esc_attr( $input_name ); ?>" value="<?php echo esc_attr( $input_value ); ?>" title="<?php _ex( 'Qty', 'Product quantity input tooltip', 'woocommerce' ) ?>" class="input-text qty text" />
+						</div>
+						<script>
+							jQuery( '.quantity input' ).each( function() {
+								if ( window.chrome || (jQuery.browser.msie && jQuery.browser.version == 10)) return; 
+								jQuery( this ).attr( 'min', jQuery( this ).attr('data-min' ) );
+								jQuery( this ).attr( 'max', jQuery( this ).attr('data-max' ) );
+							})
+						</script>
+						
+						<?php 
+						if ( 'below_qty' == $ignitewoo_variations_list->settings['show_stock'] )
+							echo $variation['availability_html']
+						?>
+
+					
+						<input type="hidden" name="variation_id" value="<?php echo $post_id; ?>">
+
+						<?php foreach ( $variation['attributes'] as $attr_name => $attr_value ) { ?>
+						
+							<?php
+							if ( taxonomy_exists( $attr_name ) ) {
+						
+								$orderby = $woocommerce->attribute_orderby( $attr_name );
+
+								switch ( $orderby ) {
+								
+									case 'name' :
+										$args = array( 'orderby' => 'name', 'hide_empty' => false, 'menu_order' => false );
+										break;
+									case 'id' :
+										$args = array( 'orderby' => 'id', 'order' => 'ASC', 'menu_order' => false );
+										break;
+									case 'menu_order' :
+										$args = array( 'menu_order' => 'ASC' );
+										break;
+								}
+
+								$terms = get_terms( $attr_name, $args );
+								
+								foreach ( $terms as $term ) {
+								
+									if ( ! in_array( $term->slug, $attr_value ) )
+										continue;
+									?>	
+									<input type="hidden" name="<?php echo sanitize_title($term->name); ?>" value="<?php echo $attr_value ;?>">
+									<?php 
+								}
+						
+							} else { 
+								?>
+								<input type="hidden" name="<?php echo sanitize_title($attr_name); ?>" value="<?php echo $attr_value ;?>">
+								<?php
+							}
+							?>
+							
+							
+						<?php } ?>       
+						
+						<button type="submit" class="btn btn-small button add-to" type="button">
+							<?php echo $ignitewoo_variations_list->settings['add_to_cart_text'] ?>
+						</button>
+						
+						<?php 
+						if ( 'below_atc' == $ignitewoo_variations_list->settings['show_stock'] )
+							echo $variation['availability_html']
+						?>
+					
+					
+					
+					</form>
+					</td>
+				
+				<?php } else { // Out of stock and backorders are not allowed ?>
+				
+					<td>
+						<?php echo $variation['availability_html'] ?>
+					</td>
+					
+					<td></td>
+				
+				<?php } ?>
+				
+				
+			<?php } ?>
+			
+		</tr>
+		
+		<?php if ( 'yes' == $ignitewoo_variations_list->settings['show_description'] ) { ?>
+			<tr>
+				<td colspan="10">
+					<?php 
+						$desc = get_post_meta( $post_id, '_variation_description', true ); 
+						
+						if ( !empty( $desc ) ) 
+							echo wpautop( $desc );
+						
+					?>
+				</td>
+			</tr>
+		<?php } ?>
+	
+	<?php } ?>
+	
+	</tbody>
+	
+</table>
+
+<script>
+jQuery( document ).ready( function($) { 
+	setTimeout( function() { 
+		jQuery( '.input-text.qty' ).each( function() { 
+			jQuery( this ).val( '0' );
+		})
+	}, 750 );
+})
+</script>
