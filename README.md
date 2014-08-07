@@ -2,7 +2,7 @@ PHP-Templates
 =============
 A place to put some of our website files that require a fair bit of modification.
 
-Language:
+Languages:
 =========
 PHP, Js, css, html
 
