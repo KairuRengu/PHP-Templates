@@ -4,7 +4,7 @@ A place to put some of our website files that require a fair bit of modification
 
 Languages:
 =========
-PHP, Js, css, html
+PHP
 
 Date Created:
 =============
