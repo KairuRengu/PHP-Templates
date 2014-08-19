@@ -1,6 +1,6 @@
 PHP-Templates
 =============
-A place to put some of our website files that require a fair bit of modification.
+A place to put some of our website files that require a modification, and are allowed to be published because a lot of files I've modified are private files. These files are all open source files.
 
 Languages:
 =========
