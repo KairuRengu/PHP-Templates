@@ -198,7 +198,7 @@ global  $wp_taxonomies, $post, $product;
 						$defaults = array(
 							'input_name'  	=> 'quantity',
 							'input_value'  	=> '1',
-							'max_value'  	=> apply_filters( 'woocommerce_quantity_input_max', '', $product ),
+							'max_value'  	=> 1000,
 							'min_value'  	=> apply_filters( 'woocommerce_quantity_input_min', '', $product ),
 							'step' 		=> apply_filters( 'woocommerce_quantity_input_step', '1', $product )
 						);
@@ -207,7 +207,7 @@ global  $wp_taxonomies, $post, $product;
 							'input_name'  	=> 'variation['. $post_id . '][quantity]',
 							'input_value'  	=> '0',
 							'min_value' 	=> 0,
-							'max_value' 	=> $variation['max_qty'],
+							'max_value' 	=> 1000,
 							'step'		=> 1
 						);
 						
